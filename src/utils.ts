@@ -487,7 +487,7 @@ export const async = {
 					throw lastError;
 				}
 
-				const delay = baseDelay * 2 ** (attempt - 1);
+				const delay = baseDelay * Math.pow(2, attempt - 1);
 				await this.sleep(delay);
 			}
 		}
