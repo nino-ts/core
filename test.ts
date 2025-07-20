@@ -1,18 +1,18 @@
 #!/usr/bin/env bun
 
-import { createApp } from './index.ts';
+import { createApp } from "./index.ts";
 
-console.log('Creating NinoTS app...');
+console.log("Creating NinoTS app...");
 
 const app = createApp({
-  port: 3001,
-  development: true
+	port: 3001,
+	development: true,
 });
 
-app.get('/', (ctx) => {
-  console.log('Root route called');
-  return ctx.json({ message: 'NinoTS is working!' });
+app.get("/", (ctx) => {
+	console.log("Root route called");
+	return ctx.json({ message: "NinoTS is working!" });
 });
 
-console.log('Starting server...');
+console.log("Starting server...");
 app.listen();

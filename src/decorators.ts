@@ -4,11 +4,11 @@
  * @since 0.1.0
  */
 
-import type { HttpMethod, RouteHandler, Middleware } from './types';
+import type { HttpMethod, Middleware, RouteHandler } from "./types";
 
 /**
  * Metadata storage for route information collected from decorators.
- * 
+ *
  * @internal
  * @since 0.1.0
  */
@@ -16,52 +16,51 @@ const routeMetadata = new Map<any, RouteInfo[]>();
 
 /**
  * Interface describing route information stored by decorators.
- * 
+ *
  * @interface RouteInfo
  * @since 0.1.0
  */
 interface RouteInfo {
-  /** HTTP method for the route */
-  method: HttpMethod;
-  /** URL path pattern */
-  path: string;
-  /** Property name of the handler method */
-  propertyKey: string;
-  /** Array of middleware functions */
-  middlewares: Middleware[];
+	/** HTTP method for the route */
+	method: HttpMethod;
+	/** URL path pattern */
+	path: string;
+	/** Property name of the handler method */
+	propertyKey: string;
+	/** Array of middleware functions */
+	middlewares: Middleware[];
 }
 
 /**
  * Creates a route decorator factory for a specific HTTP method.
- * 
+ *
  * @param method - HTTP method to create decorator for
  * @returns Decorator factory function
- * 
+ *
  * @remarks
  * This is an internal utility function used to create all HTTP method decorators.
  * It standardizes the metadata collection process for all route decorators.
- * 
+ *
  * @internal
  * @since 0.1.0
  */
 function createRouteDecorator(method: HttpMethod) {
-  return function (path: string, ...middlewares: Middleware[]) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-      if (!routeMetadata.has(target.constructor)) {
-        routeMetadata.set(target.constructor, []);
-      }
+	return (path: string, ...middlewares: Middleware[]) =>
+		(target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+			if (!routeMetadata.has(target.constructor)) {
+				routeMetadata.set(target.constructor, []);
+			}
 
-      const routes = routeMetadata.get(target.constructor)!;
-      routes.push({
-        method,
-        path,
-        propertyKey,
-        middlewares
-      });
+			const routes = routeMetadata.get(target.constructor)!;
+			routes.push({
+				method,
+				path,
+				propertyKey,
+				middlewares,
+			});
 
-      return descriptor;
-    };
-  };
+			return descriptor;
+		};
 }
 
 /**
@@ -70,15 +69,15 @@ function createRouteDecorator(method: HttpMethod) {
 
 /**
  * Decorator for handling GET requests.
- * 
+ *
  * @param path - URL path pattern (supports parameters like '/users/:id')
  * @param middlewares - Optional route-specific middlewares
  * @returns Method decorator
- * 
+ *
  * @remarks
  * Apply this decorator to controller methods that should handle GET requests.
  * The decorated method will be called when a matching GET request is received.
- * 
+ *
  * @example
  * ```typescript
  * class UserController {
@@ -87,30 +86,30 @@ function createRouteDecorator(method: HttpMethod) {
  *     const userId = ctx.params.id;
  *     return ctx.json({ id: userId });
  *   }
- * 
+ *
  *   @Get('/users', cors(), rateLimit())
  *   async getUsers(ctx: NinoContext) {
  *     return ctx.json({ users: [] });
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
-export const Get = createRouteDecorator('GET');
+export const Get = createRouteDecorator("GET");
 
 /**
  * Decorator for handling POST requests.
- * 
+ *
  * @param path - URL path pattern (supports parameters like '/users/:id')
  * @param middlewares - Optional route-specific middlewares
  * @returns Method decorator
- * 
+ *
  * @remarks
  * Apply this decorator to controller methods that should handle POST requests.
  * Commonly used for creating new resources.
- * 
+ *
  * @example
  * ```typescript
  * class UserController {
@@ -121,23 +120,23 @@ export const Get = createRouteDecorator('GET');
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
-export const Post = createRouteDecorator('POST');
+export const Post = createRouteDecorator("POST");
 
 /**
  * Decorator for handling PUT requests.
- * 
+ *
  * @param path - URL path pattern (supports parameters like '/users/:id')
  * @param middlewares - Optional route-specific middlewares
  * @returns Method decorator
- * 
+ *
  * @remarks
  * Apply this decorator to controller methods that should handle PUT requests.
  * Commonly used for updating existing resources completely.
- * 
+ *
  * @example
  * ```typescript
  * class UserController {
@@ -149,23 +148,23 @@ export const Post = createRouteDecorator('POST');
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
-export const Put = createRouteDecorator('PUT');
+export const Put = createRouteDecorator("PUT");
 
 /**
  * Decorator for handling DELETE requests.
- * 
+ *
  * @param path - URL path pattern (supports parameters like '/users/:id')
  * @param middlewares - Optional route-specific middlewares
  * @returns Method decorator
- * 
+ *
  * @remarks
  * Apply this decorator to controller methods that should handle DELETE requests.
  * Commonly used for removing existing resources.
- * 
+ *
  * @example
  * ```typescript
  * class UserController {
@@ -176,23 +175,23 @@ export const Put = createRouteDecorator('PUT');
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
-export const Delete = createRouteDecorator('DELETE');
+export const Delete = createRouteDecorator("DELETE");
 
 /**
  * Decorator for handling PATCH requests.
- * 
+ *
  * @param path - URL path pattern (supports parameters like '/users/:id')
  * @param middlewares - Optional route-specific middlewares
  * @returns Method decorator
- * 
+ *
  * @remarks
  * Apply this decorator to controller methods that should handle PATCH requests.
  * Commonly used for partial updates to existing resources.
- * 
+ *
  * @example
  * ```typescript
  * class UserController {
@@ -204,23 +203,23 @@ export const Delete = createRouteDecorator('DELETE');
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
-export const Patch = createRouteDecorator('PATCH');
+export const Patch = createRouteDecorator("PATCH");
 
 /**
  * Decorator for handling HEAD requests.
- * 
+ *
  * @param path - URL path pattern (supports parameters like '/users/:id')
  * @param middlewares - Optional route-specific middlewares
  * @returns Method decorator
- * 
+ *
  * @remarks
  * Apply this decorator to controller methods that should handle HEAD requests.
  * HEAD requests are similar to GET but only return headers without the body.
- * 
+ *
  * @example
  * ```typescript
  * class UserController {
@@ -231,23 +230,23 @@ export const Patch = createRouteDecorator('PATCH');
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
-export const Head = createRouteDecorator('HEAD');
+export const Head = createRouteDecorator("HEAD");
 
 /**
  * Decorator for handling OPTIONS requests.
- * 
+ *
  * @param path - URL path pattern (supports parameters like '/users/:id')
  * @param middlewares - Optional route-specific middlewares
  * @returns Method decorator
- * 
+ *
  * @remarks
  * Apply this decorator to controller methods that should handle OPTIONS requests.
  * Commonly used for CORS preflight requests and API capability discovery.
- * 
+ *
  * @example
  * ```typescript
  * class UserController {
@@ -259,27 +258,27 @@ export const Head = createRouteDecorator('HEAD');
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
-export const Options = createRouteDecorator('OPTIONS');
+export const Options = createRouteDecorator("OPTIONS");
 
 /**
  * Class decorator that marks a class as a route controller.
- * 
+ *
  * @param basePath - Base path prefix for all routes in this controller
  * @returns Class decorator function
- * 
+ *
  * @remarks
  * The Controller decorator automatically registers all decorated methods
  * in the class as routes when the controller is instantiated. It provides
  * a clean way to organize related routes into logical groups.
- * 
+ *
  * All routes defined in the controller will be prefixed with the basePath.
  * The decorator collects metadata from HTTP method decorators (@Get, @Post, etc.)
  * and automatically registers them with the application.
- * 
+ *
  * @example
  * ```typescript
  * @Controller('/api/users')
@@ -288,62 +287,61 @@ export const Options = createRouteDecorator('OPTIONS');
  *   async getAllUsers(ctx: NinoContext) {
  *     return ctx.json({ users: [] });
  *   }
- * 
+ *
  *   @Get('/:id')
  *   async getUser(ctx: NinoContext) {
  *     return ctx.json({ id: ctx.params.id });
  *   }
- * 
+ *
  *   @Post('/')
  *   async createUser(ctx: NinoContext) {
  *     return ctx.json({ created: true });
  *   }
  * }
- * 
+ *
  * // Routes created:
  * // GET /api/users/
  * // GET /api/users/:id
  * // POST /api/users/
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
-export function Controller(basePath = '') {
-  return function <T extends { new (...args: any[]): {} }>(constructor: T) {
-    return class extends constructor {
-      constructor(...args: any[]) {
-        super(...args);
-        
-        // Register routes from this controller
-        const routes = routeMetadata.get(constructor) || [];
-        routes.forEach(route => {
-          const fullPath = basePath + route.path;
-          const handler = (this as any)[route.propertyKey];
-          
-          if (typeof handler === 'function') {
-            // You would register these routes with your app instance
-            console.log(`Registering ${route.method} ${fullPath}`);
-          }
-        });
-      }
-    };
-  };
+export function Controller(basePath = "") {
+	return <T extends { new (...args: any[]): {} }>(constructor: T) =>
+		class extends constructor {
+			constructor(...args: any[]) {
+				super(...args);
+
+				// Register routes from this controller
+				const routes = routeMetadata.get(constructor) || [];
+				routes.forEach((route) => {
+					const fullPath = basePath + route.path;
+					const handler = (this as any)[route.propertyKey];
+
+					if (typeof handler === "function") {
+						// You would register these routes with your app instance
+						console.log(`Registering ${route.method} ${fullPath}`);
+					}
+				});
+			}
+		};
 }
 
 /**
  * Method decorator for applying middleware to specific route handlers.
- * 
+ *
  * @param middlewares - Middleware functions to apply to the decorated method
  * @returns Method decorator function
- * 
+ *
  * @remarks
  * This decorator allows you to apply middleware to individual route methods
  * in addition to or instead of global middleware. Middleware applied with
  * this decorator will be executed before the route handler.
- * 
+ *
  * Can be combined with HTTP method decorators for fine-grained middleware control.
- * 
+ *
  * @example
  * ```typescript
  * @Controller('/api')
@@ -352,13 +350,13 @@ export function Controller(basePath = '') {
  *   async getPublicData(ctx: NinoContext) {
  *     return ctx.json({ public: true });
  *   }
- * 
+ *
  *   @Get('/protected')
  *   @UseMiddleware(authMiddleware, rateLimit({ maxRequests: 10 }))
  *   async getProtectedData(ctx: NinoContext) {
  *     return ctx.json({ protected: true });
  *   }
- * 
+ *
  *   @Post('/upload')
  *   @UseMiddleware(multerMiddleware, validateFileMiddleware)
  *   async uploadFile(ctx: NinoContext) {
@@ -366,27 +364,29 @@ export function Controller(basePath = '') {
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
 export function UseMiddleware(...middlewares: Middleware[]) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-    const existingRoutes = routeMetadata.get(target.constructor) || [];
-    const routeIndex = existingRoutes.findIndex(r => r.propertyKey === propertyKey);
-    
-    if (routeIndex >= 0 && existingRoutes[routeIndex]) {
-      existingRoutes[routeIndex].middlewares.push(...middlewares);
-    } else {
-      // Store middleware for later use when route decorator is applied
-      if (!target._pendingMiddlewares) {
-        target._pendingMiddlewares = new Map();
-      }
-      target._pendingMiddlewares.set(propertyKey, middlewares);
-    }
+	return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+		const existingRoutes = routeMetadata.get(target.constructor) || [];
+		const routeIndex = existingRoutes.findIndex(
+			(r) => r.propertyKey === propertyKey,
+		);
 
-    return descriptor;
-  };
+		if (routeIndex >= 0 && existingRoutes[routeIndex]) {
+			existingRoutes[routeIndex].middlewares.push(...middlewares);
+		} else {
+			// Store middleware for later use when route decorator is applied
+			if (!target._pendingMiddlewares) {
+				target._pendingMiddlewares = new Map();
+			}
+			target._pendingMiddlewares.set(propertyKey, middlewares);
+		}
+
+		return descriptor;
+	};
 }
 
 /**
@@ -395,17 +395,17 @@ export function UseMiddleware(...middlewares: Middleware[]) {
 
 /**
  * Parameter decorator that injects the request body into the method parameter.
- * 
+ *
  * @returns Parameter decorator function
- * 
+ *
  * @remarks
  * This decorator automatically injects the parsed request body into the
  * decorated parameter. The body is parsed based on the Content-Type header.
- * 
+ *
  * For JSON requests, the body will be parsed as JSON. For form data,
  * it will be parsed as form data. The parsing happens automatically
  * before the method is called.
- * 
+ *
  * @example
  * ```typescript
  * @Controller('/api/users')
@@ -415,41 +415,45 @@ export function UseMiddleware(...middlewares: Middleware[]) {
  *     // userData contains the parsed request body
  *     return { id: 1, ...userData };
  *   }
- * 
+ *
  *   @Put('/:id')
  *   async updateUser(@Param('id') id: string, @Body() updates: UpdateUserDto) {
  *     return { id, ...updates };
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
 export function Body() {
-  return function (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) {
-    // Store parameter metadata for injection
-    if (!target._paramMetadata) {
-      target._paramMetadata = new Map();
-    }
-    
-    const existingParams = target._paramMetadata.get(propertyKey) || [];
-    existingParams[parameterIndex] = { type: 'body' };
-    target._paramMetadata.set(propertyKey, existingParams);
-  };
+	return (
+		target: any,
+		propertyKey: string | symbol | undefined,
+		parameterIndex: number,
+	) => {
+		// Store parameter metadata for injection
+		if (!target._paramMetadata) {
+			target._paramMetadata = new Map();
+		}
+
+		const existingParams = target._paramMetadata.get(propertyKey) || [];
+		existingParams[parameterIndex] = { type: "body" };
+		target._paramMetadata.set(propertyKey, existingParams);
+	};
 }
 
 /**
  * Parameter decorator that injects query parameters into the method parameter.
- * 
+ *
  * @param key - Optional specific query parameter key to extract
  * @returns Parameter decorator function
- * 
+ *
  * @remarks
  * This decorator injects query parameters from the URL into the decorated
  * parameter. If a key is provided, only that specific query parameter is
  * injected. If no key is provided, all query parameters are injected as an object.
- * 
+ *
  * @example
  * ```typescript
  * @Controller('/api/users')
@@ -459,7 +463,7 @@ export function Body() {
  *     // query contains all query parameters: { page: '1', limit: '10' }
  *     return { users: [], page: query.page };
  *   }
- * 
+ *
  *   @Get('/search')
  *   async searchUsers(@Query('q') searchQuery: string, @Query('limit') limit: string) {
  *     // searchQuery contains the 'q' parameter value
@@ -468,34 +472,38 @@ export function Body() {
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
 export function Query(key?: string) {
-  return function (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) {
-    if (!target._paramMetadata) {
-      target._paramMetadata = new Map();
-    }
-    
-    const existingParams = target._paramMetadata.get(propertyKey) || [];
-    existingParams[parameterIndex] = { type: 'query', key };
-    target._paramMetadata.set(propertyKey, existingParams);
-  };
+	return (
+		target: any,
+		propertyKey: string | symbol | undefined,
+		parameterIndex: number,
+	) => {
+		if (!target._paramMetadata) {
+			target._paramMetadata = new Map();
+		}
+
+		const existingParams = target._paramMetadata.get(propertyKey) || [];
+		existingParams[parameterIndex] = { type: "query", key };
+		target._paramMetadata.set(propertyKey, existingParams);
+	};
 }
 
 /**
  * Parameter decorator that injects path parameters into the method parameter.
- * 
+ *
  * @param key - Path parameter name to extract (must match route pattern)
  * @returns Parameter decorator function
- * 
+ *
  * @remarks
  * This decorator injects path parameters from the URL route into the decorated
  * parameter. The key must match a parameter defined in the route pattern.
- * 
+ *
  * Path parameters are automatically parsed from routes like '/users/:id/posts/:postId'.
- * 
+ *
  * @example
  * ```typescript
  * @Controller('/api/users')
@@ -505,42 +513,46 @@ export function Query(key?: string) {
  *     // userId contains the value from the :id parameter
  *     return { id: userId };
  *   }
- * 
+ *
  *   @Get('/:id/posts/:postId')
  *   async getUserPost(@Param('id') userId: string, @Param('postId') postId: string) {
  *     return { userId, postId };
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
 export function Param(key: string) {
-  return function (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) {
-    if (!target._paramMetadata) {
-      target._paramMetadata = new Map();
-    }
-    
-    const existingParams = target._paramMetadata.get(propertyKey) || [];
-    existingParams[parameterIndex] = { type: 'param', key };
-    target._paramMetadata.set(propertyKey, existingParams);
-  };
+	return (
+		target: any,
+		propertyKey: string | symbol | undefined,
+		parameterIndex: number,
+	) => {
+		if (!target._paramMetadata) {
+			target._paramMetadata = new Map();
+		}
+
+		const existingParams = target._paramMetadata.get(propertyKey) || [];
+		existingParams[parameterIndex] = { type: "param", key };
+		target._paramMetadata.set(propertyKey, existingParams);
+	};
 }
 
 /**
  * Parameter decorator that injects the full request context into the method parameter.
- * 
+ *
  * @returns Parameter decorator function
- * 
+ *
  * @remarks
  * This decorator injects the complete NinoContext object into the decorated
  * parameter, giving full access to the request, response helpers, and all
  * context methods.
- * 
+ *
  * Use this when you need access to headers, cookies, or other request
  * properties not covered by other parameter decorators.
- * 
+ *
  * @example
  * ```typescript
  * @Controller('/api')
@@ -554,7 +566,7 @@ export function Param(key: string) {
  *       userAgent: ctx.headers.get('user-agent')
  *     };
  *   }
- * 
+ *
  *   @Post('/upload')
  *   async upload(@Body() data: any, @Ctx() ctx: NinoContext) {
  *     const contentType = ctx.headers.get('content-type');
@@ -562,46 +574,50 @@ export function Param(key: string) {
  *   }
  * }
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
 export function Ctx() {
-  return function (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) {
-    if (!target._paramMetadata) {
-      target._paramMetadata = new Map();
-    }
-    
-    const existingParams = target._paramMetadata.get(propertyKey) || [];
-    existingParams[parameterIndex] = { type: 'context' };
-    target._paramMetadata.set(propertyKey, existingParams);
-  };
+	return (
+		target: any,
+		propertyKey: string | symbol | undefined,
+		parameterIndex: number,
+	) => {
+		if (!target._paramMetadata) {
+			target._paramMetadata = new Map();
+		}
+
+		const existingParams = target._paramMetadata.get(propertyKey) || [];
+		existingParams[parameterIndex] = { type: "context" };
+		target._paramMetadata.set(propertyKey, existingParams);
+	};
 }
 
 /**
  * Retrieves route metadata for a controller class.
- * 
+ *
  * @param constructor - Controller class constructor
  * @returns Array of route information collected from decorators
- * 
+ *
  * @remarks
  * This utility function extracts all route metadata that was collected
  * by HTTP method decorators (@Get, @Post, etc.) from a controller class.
- * 
+ *
  * Useful for framework integration and testing purposes where you need
  * to programmatically access the routes defined in a controller.
- * 
+ *
  * @example
  * ```typescript
  * @Controller('/api/users')
  * class UserController {
  *   @Get('/')
  *   async getUsers() { }
- * 
+ *
  *   @Post('/')
  *   async createUser() { }
  * }
- * 
+ *
  * const routes = getRouteMetadata(UserController);
  * console.log(routes);
  * // [
@@ -609,39 +625,39 @@ export function Ctx() {
  * //   { method: 'POST', path: '/', propertyKey: 'createUser', middlewares: [] }
  * // ]
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
 export function getRouteMetadata(constructor: any): RouteInfo[] {
-  return routeMetadata.get(constructor) || [];
+	return routeMetadata.get(constructor) || [];
 }
 
 /**
  * Clears all stored route metadata.
- * 
+ *
  * @remarks
  * This utility function clears the internal metadata storage used by
  * the decorator system. Primarily useful for testing scenarios where
  * you need to reset the decorator state between tests.
- * 
+ *
  * ⚠️ **Warning**: This will clear ALL route metadata for ALL controllers.
  * Use with caution in production environments.
- * 
+ *
  * @example
  * ```typescript
  * // In test setup
  * beforeEach(() => {
  *   clearRouteMetadata();
  * });
- * 
+ *
  * // Or manually when needed
  * clearRouteMetadata();
  * ```
- * 
+ *
  * @public
  * @since 0.1.0
  */
 export function clearRouteMetadata(): void {
-  routeMetadata.clear();
+	routeMetadata.clear();
 }
