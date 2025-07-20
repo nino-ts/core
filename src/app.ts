@@ -8,7 +8,6 @@ import { Context } from "./context";
 import { Router } from "./router";
 import type {
 	ErrorHandler,
-	HttpMethod,
 	Middleware,
 	NinoConfig,
 	Route,

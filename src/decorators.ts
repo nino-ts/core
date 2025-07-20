@@ -4,7 +4,15 @@
  * @since 0.1.0
  */
 
-import type { HttpMethod, Middleware, RouteHandler } from "./types";
+import type { HttpMethod, Middleware } from "./types";
+
+/**
+ * Constructor type for classes that can be decorated.
+ *
+ * @internal
+ * @since 0.1.0
+ */
+type Constructor = new (...args: unknown[]) => object;
 
 /**
  * Metadata storage for route information collected from decorators.
@@ -12,7 +20,7 @@ import type { HttpMethod, Middleware, RouteHandler } from "./types";
  * @internal
  * @since 0.1.0
  */
-const routeMetadata = new Map<any, RouteInfo[]>();
+const routeMetadata = new Map<Constructor, RouteInfo[]>();
 
 /**
  * Interface describing route information stored by decorators.
@@ -40,7 +48,7 @@ type RouteDecorator = (
 	path: string,
 	...middlewares: Middleware[]
 ) => (
-	target: any,
+	target: object,
 	propertyKey: string,
 	descriptor: PropertyDescriptor,
 ) => PropertyDescriptor;
@@ -60,18 +68,21 @@ type RouteDecorator = (
  */
 function createRouteDecorator(method: HttpMethod): RouteDecorator {
 	return (path: string, ...middlewares: Middleware[]) =>
-		(target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-			if (!routeMetadata.has(target.constructor)) {
-				routeMetadata.set(target.constructor, []);
+		(target: object, propertyKey: string, descriptor: PropertyDescriptor) => {
+			const ctor = target.constructor as Constructor;
+			if (!routeMetadata.has(ctor)) {
+				routeMetadata.set(ctor, []);
 			}
 
-			const routes = routeMetadata.get(target.constructor)!;
-			routes.push({
-				method,
-				path,
-				propertyKey,
-				middlewares,
-			});
+			const routes = routeMetadata.get(ctor);
+			if (routes) {
+				routes.push({
+					method,
+					path,
+					propertyKey,
+					middlewares,
+				});
+			}
 
 			return descriptor;
 		};
@@ -116,7 +127,7 @@ export const Get: (
 	path: string,
 	...middlewares: Middleware[]
 ) => (
-	target: any,
+	target: object,
 	propertyKey: string,
 	descriptor: PropertyDescriptor,
 ) => PropertyDescriptor = createRouteDecorator("GET");
@@ -151,7 +162,7 @@ export const Post: (
 	path: string,
 	...middlewares: Middleware[]
 ) => (
-	target: any,
+	target: object,
 	propertyKey: string,
 	descriptor: PropertyDescriptor,
 ) => PropertyDescriptor = createRouteDecorator("POST");
@@ -187,7 +198,7 @@ export const Put: (
 	path: string,
 	...middlewares: Middleware[]
 ) => (
-	target: any,
+	target: object,
 	propertyKey: string,
 	descriptor: PropertyDescriptor,
 ) => PropertyDescriptor = createRouteDecorator("PUT");
@@ -222,7 +233,7 @@ export const Delete: (
 	path: string,
 	...middlewares: Middleware[]
 ) => (
-	target: any,
+	target: object,
 	propertyKey: string,
 	descriptor: PropertyDescriptor,
 ) => PropertyDescriptor = createRouteDecorator("DELETE");
@@ -258,7 +269,7 @@ export const Patch: (
 	path: string,
 	...middlewares: Middleware[]
 ) => (
-	target: any,
+	target: object,
 	propertyKey: string,
 	descriptor: PropertyDescriptor,
 ) => PropertyDescriptor = createRouteDecorator("PATCH");
@@ -293,7 +304,7 @@ export const Head: (
 	path: string,
 	...middlewares: Middleware[]
 ) => (
-	target: any,
+	target: object,
 	propertyKey: string,
 	descriptor: PropertyDescriptor,
 ) => PropertyDescriptor = createRouteDecorator("HEAD");
@@ -318,8 +329,8 @@ export const Head: (
  *
  * @internal
  */
-type ControllerDecorator = <T extends { new (...args: any[]): {} }>(
-	constructor: T,
+type ControllerDecorator = <T extends { new (...args: unknown[]): object }>(
+	ctor: T,
 ) => T;
 
 /**
@@ -367,16 +378,16 @@ type ControllerDecorator = <T extends { new (...args: any[]): {} }>(
  * @since 0.1.0
  */
 export function Controller(basePath = ""): ControllerDecorator {
-	return <T extends { new (...args: any[]): {} }>(constructor: T) =>
-		class extends constructor {
-			constructor(...args: any[]) {
+	return <T extends { new (...args: unknown[]): object }>(ctor: T) =>
+		class extends ctor {
+			constructor(...args: unknown[]) {
 				super(...args);
 
 				// Register routes from this controller
-				const routes = routeMetadata.get(constructor) || [];
+				const routes = routeMetadata.get(ctor) || [];
 				routes.forEach((route) => {
 					const fullPath = basePath + route.path;
-					const handler = (this as any)[route.propertyKey];
+					const handler = (this as Record<string, unknown>)[route.propertyKey];
 
 					if (typeof handler === "function") {
 						// You would register these routes with your app instance
@@ -429,11 +440,15 @@ export function Controller(basePath = ""): ControllerDecorator {
 export function UseMiddleware(
 	...middlewares: Middleware[]
 ): (
-	target: any,
+	target: object,
 	propertyKey: string,
 	descriptor: PropertyDescriptor,
 ) => PropertyDescriptor {
-	return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+	return (
+		target: object,
+		propertyKey: string,
+		descriptor: PropertyDescriptor,
+	) => {
 		const existingRoutes = routeMetadata.get(target.constructor) || [];
 		const routeIndex = existingRoutes.findIndex(
 			(r) => r.propertyKey === propertyKey,
@@ -491,12 +506,12 @@ export function UseMiddleware(
  * @since 0.1.0
  */
 export function Body(): (
-	target: any,
+	target: object,
 	propertyKey: string | symbol | undefined,
 	parameterIndex: number,
 ) => void {
 	return (
-		target: any,
+		target: object,
 		propertyKey: string | symbol | undefined,
 		parameterIndex: number,
 	) => {
@@ -547,12 +562,12 @@ export function Body(): (
 export function Query(
 	key?: string,
 ): (
-	target: any,
+	target: object,
 	propertyKey: string | symbol | undefined,
 	parameterIndex: number,
 ) => void {
 	return (
-		target: any,
+		target: object,
 		propertyKey: string | symbol | undefined,
 		parameterIndex: number,
 	) => {
@@ -601,12 +616,12 @@ export function Query(
 export function Param(
 	key: string,
 ): (
-	target: any,
+	target: object,
 	propertyKey: string | symbol | undefined,
 	parameterIndex: number,
 ) => void {
 	return (
-		target: any,
+		target: object,
 		propertyKey: string | symbol | undefined,
 		parameterIndex: number,
 	) => {
@@ -659,12 +674,12 @@ export function Param(
  * @since 0.1.0
  */
 export function Ctx(): (
-	target: any,
+	target: object,
 	propertyKey: string | symbol | undefined,
 	parameterIndex: number,
 ) => void {
 	return (
-		target: any,
+		target: object,
 		propertyKey: string | symbol | undefined,
 		parameterIndex: number,
 	) => {
@@ -713,8 +728,8 @@ export function Ctx(): (
  * @public
  * @since 0.1.0
  */
-export function getRouteMetadata(constructor: any): RouteInfo[] {
-	return routeMetadata.get(constructor) || [];
+export function getRouteMetadata(ctor: Constructor): RouteInfo[] {
+	return routeMetadata.get(ctor) || [];
 }
 
 /**

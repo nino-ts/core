@@ -248,7 +248,7 @@ export const env: {
 		const value = process.env[key];
 		if (value === undefined) return defaultValue;
 		const parsed = parseInt(value, 10);
-		return isNaN(parsed) ? defaultValue : parsed;
+		return Number.isNaN(parsed) ? defaultValue : parsed;
 	},
 
 	/**
@@ -326,7 +326,7 @@ export const validate: {
 	email(email: string): boolean;
 	url(url: string): boolean;
 	uuid(uuid: string): boolean;
-	required(value: any): boolean;
+	required(value: unknown): boolean;
 	minLength(str: string, min: number): boolean;
 	maxLength(str: string, max: number): boolean;
 	range(num: number, min: number, max: number): boolean;
@@ -375,7 +375,7 @@ export const validate: {
 	 * @param value - Value to check
 	 * @returns True if value is present
 	 */
-	required(value: any): boolean {
+	required(value: unknown): boolean {
 		return value !== null && value !== undefined;
 	},
 
@@ -516,7 +516,7 @@ export const async: {
 			}
 		}
 
-		throw lastError!;
+		throw new Error("Retry loop completed without success");
 	},
 };
 
@@ -553,7 +553,7 @@ export const async: {
  */
 export const object: {
 	clone<T>(obj: T): T;
-	pick<T extends Record<string, any>, K extends keyof T>(
+	pick<T extends Record<string, unknown>, K extends keyof T>(
 		obj: T,
 		keys: K[],
 	): Pick<T, K>;
@@ -581,7 +581,7 @@ export const object: {
 	 * @param keys - Array of keys to pick
 	 * @returns New object with only the specified keys
 	 */
-	pick<T extends Record<string, any>, K extends keyof T>(
+	pick<T extends Record<string, unknown>, K extends keyof T>(
 		obj: T,
 		keys: K[],
 	): Pick<T, K> {

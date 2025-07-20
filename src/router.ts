@@ -7,7 +7,6 @@
 import type {
 	HttpMethod,
 	Middleware,
-	NinoContext,
 	Route,
 	RouteHandler,
 	RouterConfig,
