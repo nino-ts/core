@@ -44,7 +44,7 @@ interface RouteInfo {
  * @internal
  * @since 0.1.0
  */
-function createRouteDecorator(method: HttpMethod) {
+function createRouteDecorator(method: HttpMethod): (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor {
 	return (path: string, ...middlewares: Middleware[]) =>
 		(target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
 			if (!routeMetadata.has(target.constructor)) {
@@ -97,7 +97,7 @@ function createRouteDecorator(method: HttpMethod) {
  * @public
  * @since 0.1.0
  */
-export const Get = createRouteDecorator("GET");
+export const Get: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("GET");
 
 /**
  * Decorator for handling POST requests.
@@ -124,7 +124,7 @@ export const Get = createRouteDecorator("GET");
  * @public
  * @since 0.1.0
  */
-export const Post = createRouteDecorator("POST");
+export const Post: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("POST");
 
 /**
  * Decorator for handling PUT requests.
@@ -152,7 +152,7 @@ export const Post = createRouteDecorator("POST");
  * @public
  * @since 0.1.0
  */
-export const Put = createRouteDecorator("PUT");
+export const Put: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("PUT");
 
 /**
  * Decorator for handling DELETE requests.
@@ -179,7 +179,7 @@ export const Put = createRouteDecorator("PUT");
  * @public
  * @since 0.1.0
  */
-export const Delete = createRouteDecorator("DELETE");
+export const Delete: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("DELETE");
 
 /**
  * Decorator for handling PATCH requests.
@@ -207,7 +207,7 @@ export const Delete = createRouteDecorator("DELETE");
  * @public
  * @since 0.1.0
  */
-export const Patch = createRouteDecorator("PATCH");
+export const Patch: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("PATCH");
 
 /**
  * Decorator for handling HEAD requests.
@@ -234,7 +234,7 @@ export const Patch = createRouteDecorator("PATCH");
  * @public
  * @since 0.1.0
  */
-export const Head = createRouteDecorator("HEAD");
+export const Head: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("HEAD");
 
 /**
  * Decorator for handling OPTIONS requests.
@@ -262,7 +262,7 @@ export const Head = createRouteDecorator("HEAD");
  * @public
  * @since 0.1.0
  */
-export const Options = createRouteDecorator("OPTIONS");
+export const Options: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("OPTIONS");
 
 /**
  * Class decorator that marks a class as a route controller.
@@ -308,7 +308,7 @@ export const Options = createRouteDecorator("OPTIONS");
  * @public
  * @since 0.1.0
  */
-export function Controller(basePath = "") {
+export function Controller(basePath = ""): <T extends { new (...args: any[]): {} }>(constructor: T) => T {
 	return <T extends { new (...args: any[]): {} }>(constructor: T) =>
 		class extends constructor {
 			constructor(...args: any[]) {
@@ -368,7 +368,7 @@ export function Controller(basePath = "") {
  * @public
  * @since 0.1.0
  */
-export function UseMiddleware(...middlewares: Middleware[]) {
+export function UseMiddleware(...middlewares: Middleware[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor {
 	return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
 		const existingRoutes = routeMetadata.get(target.constructor) || [];
 		const routeIndex = existingRoutes.findIndex(
@@ -426,7 +426,7 @@ export function UseMiddleware(...middlewares: Middleware[]) {
  * @public
  * @since 0.1.0
  */
-export function Body() {
+export function Body(): (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) => void {
 	return (
 		target: any,
 		propertyKey: string | symbol | undefined,
@@ -476,7 +476,7 @@ export function Body() {
  * @public
  * @since 0.1.0
  */
-export function Query(key?: string) {
+export function Query(key?: string): (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) => void {
 	return (
 		target: any,
 		propertyKey: string | symbol | undefined,
@@ -524,7 +524,7 @@ export function Query(key?: string) {
  * @public
  * @since 0.1.0
  */
-export function Param(key: string) {
+export function Param(key: string): (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) => void {
 	return (
 		target: any,
 		propertyKey: string | symbol | undefined,
@@ -578,7 +578,7 @@ export function Param(key: string) {
  * @public
  * @since 0.1.0
  */
-export function Ctx() {
+export function Ctx(): (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) => void {
 	return (
 		target: any,
 		propertyKey: string | symbol | undefined,

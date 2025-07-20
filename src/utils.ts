@@ -202,7 +202,15 @@ export const MimeType = {
  * @public
  * @since 0.1.0
  */
-export const env = {
+export const env: {
+	get(key: string, defaultValue?: string): string | undefined;
+	getRequired(key: string): string;
+	getNumber(key: string, defaultValue?: number): number | undefined;
+	getBoolean(key: string, defaultValue?: boolean): boolean;
+	isDevelopment(): boolean;
+	isProduction(): boolean;
+	isTest(): boolean;
+} = {
 	/**
 	 * Gets an environment variable with optional default value.
 	 *
@@ -314,7 +322,15 @@ export const env = {
  * @public
  * @since 0.1.0
  */
-export const validate = {
+export const validate: {
+	email(email: string): boolean;
+	url(url: string): boolean;
+	uuid(uuid: string): boolean;
+	required(value: any): boolean;
+	minLength(str: string, min: number): boolean;
+	maxLength(str: string, max: number): boolean;
+	range(num: number, min: number, max: number): boolean;
+} = {
 	/**
 	 * Validates email address format.
 	 *
@@ -430,7 +446,11 @@ export const validate = {
  * @public
  * @since 0.1.0
  */
-export const async = {
+export const async: {
+	sleep(ms: number): Promise<void>;
+	timeout<T>(promise: Promise<T>, ms: number): Promise<T>;
+	retry<T>(fn: () => Promise<T>, maxAttempts?: number, baseDelay?: number): Promise<T>;
+} = {
 	/**
 	 * Creates a delay for the specified number of milliseconds.
 	 *
@@ -527,7 +547,12 @@ export const async = {
  * @public
  * @since 0.1.0
  */
-export const object = {
+export const object: {
+	clone<T>(obj: T): T;
+	pick<T extends Record<string, any>, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
+	omit<T, K extends keyof T>(obj: T, keys: K[]): Omit<T, K>;
+	isEmpty(obj: object): boolean;
+} = {
 	/**
 	 * Creates a deep clone of an object using JSON serialization.
 	 *
@@ -612,7 +637,13 @@ export const object = {
  * @public
  * @since 0.1.0
  */
-export const string = {
+export const string: {
+	camelCase(str: string): string;
+	kebabCase(str: string): string;
+	snakeCase(str: string): string;
+	capitalize(str: string): string;
+	truncate(str: string, length: number, suffix?: string): string;
+} = {
 	/**
 	 * Converts string to camelCase format.
 	 *
