@@ -449,7 +449,11 @@ export const validate: {
 export const async: {
 	sleep(ms: number): Promise<void>;
 	timeout<T>(promise: Promise<T>, ms: number): Promise<T>;
-	retry<T>(fn: () => Promise<T>, maxAttempts?: number, baseDelay?: number): Promise<T>;
+	retry<T>(
+		fn: () => Promise<T>,
+		maxAttempts?: number,
+		baseDelay?: number,
+	): Promise<T>;
 } = {
 	/**
 	 * Creates a delay for the specified number of milliseconds.
@@ -507,7 +511,7 @@ export const async: {
 					throw lastError;
 				}
 
-				const delay = baseDelay * Math.pow(2, attempt - 1);
+				const delay = baseDelay * 2 ** (attempt - 1);
 				await this.sleep(delay);
 			}
 		}
@@ -549,7 +553,10 @@ export const async: {
  */
 export const object: {
 	clone<T>(obj: T): T;
-	pick<T extends Record<string, any>, K extends keyof T>(obj: T, keys: K[]): Pick<T, K>;
+	pick<T extends Record<string, any>, K extends keyof T>(
+		obj: T,
+		keys: K[],
+	): Pick<T, K>;
 	omit<T, K extends keyof T>(obj: T, keys: K[]): Omit<T, K>;
 	isEmpty(obj: object): boolean;
 } = {

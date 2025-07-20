@@ -32,6 +32,20 @@ interface RouteInfo {
 }
 
 /**
+ * Shared type alias for HTTP method decorator signature.
+ *
+ * @since 0.1.0
+ */
+type RouteDecorator = (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: any,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor;
+
+/**
  * Creates a route decorator factory for a specific HTTP method.
  *
  * @param method - HTTP method to create decorator for
@@ -44,7 +58,7 @@ interface RouteInfo {
  * @internal
  * @since 0.1.0
  */
-function createRouteDecorator(method: HttpMethod): (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor {
+function createRouteDecorator(method: HttpMethod): RouteDecorator {
 	return (path: string, ...middlewares: Middleware[]) =>
 		(target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
 			if (!routeMetadata.has(target.constructor)) {
@@ -92,12 +106,20 @@ function createRouteDecorator(method: HttpMethod): (path: string, ...middlewares
  *     return ctx.json({ users: [] });
  *   }
  * }
- * ```
+export const Get: RouteDecorator = createRouteDecorator("GET");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Get: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("GET");
+export const Get: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: any,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("GET");
 
 /**
  * Decorator for handling POST requests.
@@ -119,12 +141,20 @@ export const Get: (path: string, ...middlewares: Middleware[]) => (target: any, 
  *     return ctx.json({ created: userData });
  *   }
  * }
- * ```
+export const Post: RouteDecorator = createRouteDecorator("POST");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Post: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("POST");
+export const Post: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: any,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("POST");
 
 /**
  * Decorator for handling PUT requests.
@@ -147,12 +177,20 @@ export const Post: (path: string, ...middlewares: Middleware[]) => (target: any,
  *     return ctx.json({ id: userId, updated: userData });
  *   }
  * }
- * ```
+export const Put: RouteDecorator = createRouteDecorator("PUT");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Put: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("PUT");
+export const Put: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: any,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("PUT");
 
 /**
  * Decorator for handling DELETE requests.
@@ -174,12 +212,20 @@ export const Put: (path: string, ...middlewares: Middleware[]) => (target: any, 
  *     return ctx.json({ deleted: userId });
  *   }
  * }
- * ```
+export const Delete: RouteDecorator = createRouteDecorator("DELETE");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Delete: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("DELETE");
+export const Delete: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: any,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("DELETE");
 
 /**
  * Decorator for handling PATCH requests.
@@ -202,12 +248,20 @@ export const Delete: (path: string, ...middlewares: Middleware[]) => (target: an
  *     return ctx.json({ id: userId, patched: updates });
  *   }
  * }
- * ```
+export const Patch: RouteDecorator = createRouteDecorator("PATCH");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Patch: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("PATCH");
+export const Patch: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: any,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("PATCH");
 
 /**
  * Decorator for handling HEAD requests.
@@ -229,12 +283,20 @@ export const Patch: (path: string, ...middlewares: Middleware[]) => (target: any
  *     return ctx.status(200).text('');
  *   }
  * }
- * ```
+export const Head: RouteDecorator = createRouteDecorator("HEAD");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Head: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("HEAD");
+export const Head: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: any,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("HEAD");
 
 /**
  * Decorator for handling OPTIONS requests.
@@ -251,18 +313,14 @@ export const Head: (path: string, ...middlewares: Middleware[]) => (target: any,
  * ```typescript
  * class UserController {
  *   @Options('/users/*')
- *   async handleOptions(ctx: NinoContext) {
- *     return ctx.status(204)
- *       .header('Allow', 'GET,POST,PUT,DELETE')
- *       .text('');
- *   }
- * }
- * ```
+/**
+ * Type alias for the Controller decorator return type.
  *
- * @public
- * @since 0.1.0
+ * @internal
  */
-export const Options: (path: string, ...middlewares: Middleware[]) => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor = createRouteDecorator("OPTIONS");
+type ControllerDecorator = <T extends { new (...args: any[]): {} }>(
+	constructor: T,
+) => T;
 
 /**
  * Class decorator that marks a class as a route controller.
@@ -308,7 +366,7 @@ export const Options: (path: string, ...middlewares: Middleware[]) => (target: a
  * @public
  * @since 0.1.0
  */
-export function Controller(basePath = ""): <T extends { new (...args: any[]): {} }>(constructor: T) => T {
+export function Controller(basePath = ""): ControllerDecorator {
 	return <T extends { new (...args: any[]): {} }>(constructor: T) =>
 		class extends constructor {
 			constructor(...args: any[]) {
@@ -368,7 +426,13 @@ export function Controller(basePath = ""): <T extends { new (...args: any[]): {}
  * @public
  * @since 0.1.0
  */
-export function UseMiddleware(...middlewares: Middleware[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor {
+export function UseMiddleware(
+	...middlewares: Middleware[]
+): (
+	target: any,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor {
 	return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
 		const existingRoutes = routeMetadata.get(target.constructor) || [];
 		const routeIndex = existingRoutes.findIndex(
@@ -426,7 +490,11 @@ export function UseMiddleware(...middlewares: Middleware[]): (target: any, prope
  * @public
  * @since 0.1.0
  */
-export function Body(): (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) => void {
+export function Body(): (
+	target: any,
+	propertyKey: string | symbol | undefined,
+	parameterIndex: number,
+) => void {
 	return (
 		target: any,
 		propertyKey: string | symbol | undefined,
@@ -476,7 +544,13 @@ export function Body(): (target: any, propertyKey: string | symbol | undefined, 
  * @public
  * @since 0.1.0
  */
-export function Query(key?: string): (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) => void {
+export function Query(
+	key?: string,
+): (
+	target: any,
+	propertyKey: string | symbol | undefined,
+	parameterIndex: number,
+) => void {
 	return (
 		target: any,
 		propertyKey: string | symbol | undefined,
@@ -524,7 +598,13 @@ export function Query(key?: string): (target: any, propertyKey: string | symbol 
  * @public
  * @since 0.1.0
  */
-export function Param(key: string): (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) => void {
+export function Param(
+	key: string,
+): (
+	target: any,
+	propertyKey: string | symbol | undefined,
+	parameterIndex: number,
+) => void {
 	return (
 		target: any,
 		propertyKey: string | symbol | undefined,
@@ -578,7 +658,11 @@ export function Param(key: string): (target: any, propertyKey: string | symbol |
  * @public
  * @since 0.1.0
  */
-export function Ctx(): (target: any, propertyKey: string | symbol | undefined, parameterIndex: number) => void {
+export function Ctx(): (
+	target: any,
+	propertyKey: string | symbol | undefined,
+	parameterIndex: number,
+) => void {
 	return (
 		target: any,
 		propertyKey: string | symbol | undefined,
