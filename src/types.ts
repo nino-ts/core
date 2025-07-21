@@ -64,7 +64,9 @@ export type HttpMethod =
  * @public
  * @since 0.1.0
  */
-export type RouteHandler<T = any> = (context: NinoContext) => Promise<T> | T;
+export type RouteHandler<T = unknown> = (
+	context: NinoContext,
+) => Promise<T> | T;
 
 /**
  * Middleware function signature for request/response processing pipeline.
@@ -105,7 +107,7 @@ export type RouteHandler<T = any> = (context: NinoContext) => Promise<T> | T;
 export type Middleware = (
 	context: NinoContext,
 	next: () => Promise<void>,
-) => Promise<void | Response> | void | Response;
+) => Promise<undefined | Response> | undefined | Response;
 
 /**
  * Internal route definition structure used by the router.
@@ -200,7 +202,7 @@ export interface NinoContext {
 	readonly body: unknown;
 
 	/** Shared state object for passing data between middleware */
-	readonly state: Record<string, any>;
+	readonly state: Record<string, unknown>;
 
 	/**
 	 * Create a JSON response.
@@ -215,7 +217,7 @@ export interface NinoContext {
 	 * return ctx.json(users, { status: 200 });
 	 * ```
 	 */
-	json(data: any, init?: ResponseInit): Response;
+	json(data: unknown, init?: ResponseInit): Response;
 
 	/**
 	 * Create a plain text response.

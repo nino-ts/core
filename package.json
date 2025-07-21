@@ -1,9 +1,12 @@
 {
-	"name": "core",
+	"name": "@ninots/core",
 	"module": "index.ts",
 	"type": "module",
+	"version": "0.1.1",
 	"private": false,
-	"version": "0.1.0",
+	"publishConfig": {
+		"access": "public"
+	},
 	"devDependencies": {
 		"@biomejs/biome": "2.1.2",
 		"@types/bun": "latest"

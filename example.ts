@@ -60,7 +60,7 @@ app.get("/search", (ctx) => {
 
 // POST route with body
 app.post("/users", (ctx) => {
-	const userData = ctx.body as Record<string, any>;
+	const userData = ctx.body as Record<string, unknown>;
 	return ctx.status(201).json({
 		message: "User created",
 		user: {

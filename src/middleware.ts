@@ -270,10 +270,10 @@ export function json(
 		 * Optional reviver function for JSON.parse
 		 * @defaultValue undefined
 		 */
-		reviver?: (key: string, value: any) => any;
+		reviver?: (key: string, value: unknown) => unknown;
 	} = {},
 ): Middleware {
-	const { limit = 1048576, strict = true, reviver } = options;
+	const { strict = true } = options;
 
 	return async (context: NinoContext, next: () => Promise<void>) => {
 		const contentType = context.headers.get("content-type") || "";
@@ -394,7 +394,7 @@ export function errorHandler(
 			}
 
 			// Default error response
-			const errorResponse: any = {
+			const errorResponse: unknown = {
 				error: "Internal Server Error",
 				message: err.message,
 			};
@@ -656,7 +656,7 @@ export function staticFiles(
 
 				return new Response(file);
 			}
-		} catch (error) {
+		} catch (_error) {
 			// File doesn't exist or can't be read
 			if (!fallthrough) {
 				throw new Error("File not found");
