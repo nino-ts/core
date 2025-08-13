@@ -391,7 +391,6 @@ export function Controller(basePath = ""): ControllerDecorator {
 					const handlerValue = (this as unknown)[route.propertyKey];
 
 					if (
-						Object.prototype.hasOwnProperty.call(this, route.propertyKey) &&
 						typeof handlerValue === "function"
 					) {
 						// You would register these routes with your app instance
