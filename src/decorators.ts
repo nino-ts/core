@@ -389,7 +389,12 @@ export function Controller(basePath = ""): ControllerDecorator {
 					const fullPath = basePath + route.path;
 					const handler = (this as Record<string, unknown>)[route.propertyKey];
 
-					if (typeof handler === "function") {
+					const handlerValue = (this as unknown)[route.propertyKey];
+
+					if (
+						Object.prototype.hasOwnProperty.call(this, route.propertyKey) &&
+						typeof handlerValue === "function"
+					) {
 						// You would register these routes with your app instance
 						console.log(`Registering ${route.method} ${fullPath}`);
 					}
