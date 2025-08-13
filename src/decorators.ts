@@ -4,7 +4,15 @@
  * @since 0.1.0
  */
 
-import type { HttpMethod, Middleware, RouteHandler } from "./types";
+import type { HttpMethod, Middleware } from "./types";
+
+/**
+ * Constructor type for classes that can be decorated.
+ *
+ * @internal
+ * @since 0.1.0
+ */
+type Constructor = new (...args: unknown[]) => object;
 
 /**
  * Metadata storage for route information collected from decorators.
@@ -12,7 +20,7 @@ import type { HttpMethod, Middleware, RouteHandler } from "./types";
  * @internal
  * @since 0.1.0
  */
-const routeMetadata = new Map<any, RouteInfo[]>();
+const routeMetadata = new Map<Constructor, RouteInfo[]>();
 
 /**
  * Interface describing route information stored by decorators.
@@ -32,6 +40,20 @@ interface RouteInfo {
 }
 
 /**
+ * Shared type alias for HTTP method decorator signature.
+ *
+ * @since 0.1.0
+ */
+type RouteDecorator = (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: object,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor;
+
+/**
  * Creates a route decorator factory for a specific HTTP method.
  *
  * @param method - HTTP method to create decorator for
@@ -44,20 +66,23 @@ interface RouteInfo {
  * @internal
  * @since 0.1.0
  */
-function createRouteDecorator(method: HttpMethod) {
+function createRouteDecorator(method: HttpMethod): RouteDecorator {
 	return (path: string, ...middlewares: Middleware[]) =>
-		(target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
-			if (!routeMetadata.has(target.constructor)) {
-				routeMetadata.set(target.constructor, []);
+		(target: object, propertyKey: string, descriptor: PropertyDescriptor) => {
+			const ctor = target.constructor as Constructor;
+			if (!routeMetadata.has(ctor)) {
+				routeMetadata.set(ctor, []);
 			}
 
-			const routes = routeMetadata.get(target.constructor)!;
-			routes.push({
-				method,
-				path,
-				propertyKey,
-				middlewares,
-			});
+			const routes = routeMetadata.get(ctor);
+			if (routes) {
+				routes.push({
+					method,
+					path,
+					propertyKey,
+					middlewares,
+				});
+			}
 
 			return descriptor;
 		};
@@ -92,12 +117,20 @@ function createRouteDecorator(method: HttpMethod) {
  *     return ctx.json({ users: [] });
  *   }
  * }
- * ```
+export const Get: RouteDecorator = createRouteDecorator("GET");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Get = createRouteDecorator("GET");
+export const Get: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: object,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("GET");
 
 /**
  * Decorator for handling POST requests.
@@ -119,12 +152,20 @@ export const Get = createRouteDecorator("GET");
  *     return ctx.json({ created: userData });
  *   }
  * }
- * ```
+export const Post: RouteDecorator = createRouteDecorator("POST");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Post = createRouteDecorator("POST");
+export const Post: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: object,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("POST");
 
 /**
  * Decorator for handling PUT requests.
@@ -147,12 +188,20 @@ export const Post = createRouteDecorator("POST");
  *     return ctx.json({ id: userId, updated: userData });
  *   }
  * }
- * ```
+export const Put: RouteDecorator = createRouteDecorator("PUT");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Put = createRouteDecorator("PUT");
+export const Put: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: object,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("PUT");
 
 /**
  * Decorator for handling DELETE requests.
@@ -174,12 +223,20 @@ export const Put = createRouteDecorator("PUT");
  *     return ctx.json({ deleted: userId });
  *   }
  * }
- * ```
+export const Delete: RouteDecorator = createRouteDecorator("DELETE");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Delete = createRouteDecorator("DELETE");
+export const Delete: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: object,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("DELETE");
 
 /**
  * Decorator for handling PATCH requests.
@@ -202,12 +259,20 @@ export const Delete = createRouteDecorator("DELETE");
  *     return ctx.json({ id: userId, patched: updates });
  *   }
  * }
- * ```
+export const Patch: RouteDecorator = createRouteDecorator("PATCH");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Patch = createRouteDecorator("PATCH");
+export const Patch: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: object,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("PATCH");
 
 /**
  * Decorator for handling HEAD requests.
@@ -229,12 +294,20 @@ export const Patch = createRouteDecorator("PATCH");
  *     return ctx.status(200).text('');
  *   }
  * }
- * ```
+export const Head: RouteDecorator = createRouteDecorator("HEAD");
+```
  *
  * @public
  * @since 0.1.0
  */
-export const Head = createRouteDecorator("HEAD");
+export const Head: (
+	path: string,
+	...middlewares: Middleware[]
+) => (
+	target: object,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor = createRouteDecorator("HEAD");
 
 /**
  * Decorator for handling OPTIONS requests.
@@ -251,18 +324,14 @@ export const Head = createRouteDecorator("HEAD");
  * ```typescript
  * class UserController {
  *   @Options('/users/*')
- *   async handleOptions(ctx: NinoContext) {
- *     return ctx.status(204)
- *       .header('Allow', 'GET,POST,PUT,DELETE')
- *       .text('');
- *   }
- * }
- * ```
+/**
+ * Type alias for the Controller decorator return type.
  *
- * @public
- * @since 0.1.0
+ * @internal
  */
-export const Options = createRouteDecorator("OPTIONS");
+type ControllerDecorator = <T extends { new (...args: unknown[]): object }>(
+	ctor: T,
+) => T;
 
 /**
  * Class decorator that marks a class as a route controller.
@@ -308,19 +377,22 @@ export const Options = createRouteDecorator("OPTIONS");
  * @public
  * @since 0.1.0
  */
-export function Controller(basePath = "") {
-	return <T extends { new (...args: any[]): {} }>(constructor: T) =>
-		class extends constructor {
-			constructor(...args: any[]) {
+export function Controller(basePath = ""): ControllerDecorator {
+	return <T extends { new (...args: unknown[]): object }>(ctor: T) =>
+		class extends ctor {
+			constructor(...args: unknown[]) {
 				super(...args);
 
 				// Register routes from this controller
-				const routes = routeMetadata.get(constructor) || [];
+				const routes = routeMetadata.get(ctor) || [];
 				routes.forEach((route) => {
 					const fullPath = basePath + route.path;
-					const handler = (this as any)[route.propertyKey];
+					const handler = (this as Record<string, unknown>)[route.propertyKey];
+					const handlerValue = (this as unknown)[route.propertyKey];
 
-					if (typeof handler === "function") {
+					if (
+						typeof handlerValue === "function"
+					) {
 						// You would register these routes with your app instance
 						console.log(`Registering ${route.method} ${fullPath}`);
 					}
@@ -368,8 +440,18 @@ export function Controller(basePath = "") {
  * @public
  * @since 0.1.0
  */
-export function UseMiddleware(...middlewares: Middleware[]) {
-	return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+export function UseMiddleware(
+	...middlewares: Middleware[]
+): (
+	target: object,
+	propertyKey: string,
+	descriptor: PropertyDescriptor,
+) => PropertyDescriptor {
+	return (
+		target: object,
+		propertyKey: string,
+		descriptor: PropertyDescriptor,
+	) => {
 		const existingRoutes = routeMetadata.get(target.constructor) || [];
 		const routeIndex = existingRoutes.findIndex(
 			(r) => r.propertyKey === propertyKey,
@@ -426,9 +508,13 @@ export function UseMiddleware(...middlewares: Middleware[]) {
  * @public
  * @since 0.1.0
  */
-export function Body() {
+export function Body(): (
+	target: object,
+	propertyKey: string | symbol | undefined,
+	parameterIndex: number,
+) => void {
 	return (
-		target: any,
+		target: object,
 		propertyKey: string | symbol | undefined,
 		parameterIndex: number,
 	) => {
@@ -476,9 +562,15 @@ export function Body() {
  * @public
  * @since 0.1.0
  */
-export function Query(key?: string) {
+export function Query(
+	key?: string,
+): (
+	target: object,
+	propertyKey: string | symbol | undefined,
+	parameterIndex: number,
+) => void {
 	return (
-		target: any,
+		target: object,
 		propertyKey: string | symbol | undefined,
 		parameterIndex: number,
 	) => {
@@ -524,9 +616,15 @@ export function Query(key?: string) {
  * @public
  * @since 0.1.0
  */
-export function Param(key: string) {
+export function Param(
+	key: string,
+): (
+	target: object,
+	propertyKey: string | symbol | undefined,
+	parameterIndex: number,
+) => void {
 	return (
-		target: any,
+		target: object,
 		propertyKey: string | symbol | undefined,
 		parameterIndex: number,
 	) => {
@@ -578,9 +676,13 @@ export function Param(key: string) {
  * @public
  * @since 0.1.0
  */
-export function Ctx() {
+export function Ctx(): (
+	target: object,
+	propertyKey: string | symbol | undefined,
+	parameterIndex: number,
+) => void {
 	return (
-		target: any,
+		target: object,
 		propertyKey: string | symbol | undefined,
 		parameterIndex: number,
 	) => {
@@ -629,8 +731,8 @@ export function Ctx() {
  * @public
  * @since 0.1.0
  */
-export function getRouteMetadata(constructor: any): RouteInfo[] {
-	return routeMetadata.get(constructor) || [];
+export function getRouteMetadata(ctor: Constructor): RouteInfo[] {
+	return routeMetadata.get(ctor) || [];
 }
 
 /**

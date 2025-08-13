@@ -202,7 +202,15 @@ export const MimeType = {
  * @public
  * @since 0.1.0
  */
-export const env = {
+export const env: {
+	get(key: string, defaultValue?: string): string | undefined;
+	getRequired(key: string): string;
+	getNumber(key: string, defaultValue?: number): number | undefined;
+	getBoolean(key: string, defaultValue?: boolean): boolean;
+	isDevelopment(): boolean;
+	isProduction(): boolean;
+	isTest(): boolean;
+} = {
 	/**
 	 * Gets an environment variable with optional default value.
 	 *
@@ -240,7 +248,7 @@ export const env = {
 		const value = process.env[key];
 		if (value === undefined) return defaultValue;
 		const parsed = parseInt(value, 10);
-		return isNaN(parsed) ? defaultValue : parsed;
+		return Number.isNaN(parsed) ? defaultValue : parsed;
 	},
 
 	/**
@@ -314,7 +322,15 @@ export const env = {
  * @public
  * @since 0.1.0
  */
-export const validate = {
+export const validate: {
+	email(email: string): boolean;
+	url(url: string): boolean;
+	uuid(uuid: string): boolean;
+	required(value: unknown): boolean;
+	minLength(str: string, min: number): boolean;
+	maxLength(str: string, max: number): boolean;
+	range(num: number, min: number, max: number): boolean;
+} = {
 	/**
 	 * Validates email address format.
 	 *
@@ -359,7 +375,7 @@ export const validate = {
 	 * @param value - Value to check
 	 * @returns True if value is present
 	 */
-	required(value: any): boolean {
+	required(value: unknown): boolean {
 		return value !== null && value !== undefined;
 	},
 
@@ -430,7 +446,15 @@ export const validate = {
  * @public
  * @since 0.1.0
  */
-export const async = {
+export const async: {
+	sleep(ms: number): Promise<void>;
+	timeout<T>(promise: Promise<T>, ms: number): Promise<T>;
+	retry<T>(
+		fn: () => Promise<T>,
+		maxAttempts?: number,
+		baseDelay?: number,
+	): Promise<T>;
+} = {
 	/**
 	 * Creates a delay for the specified number of milliseconds.
 	 *
@@ -487,12 +511,15 @@ export const async = {
 					throw lastError;
 				}
 
-				const delay = baseDelay * Math.pow(2, attempt - 1);
+				const delay = baseDelay * 2 ** (attempt - 1);
 				await this.sleep(delay);
 			}
 		}
 
-		throw lastError!;
+		if (lastError !== undefined) {
+			throw lastError;
+		}
+		throw lastError ?? new Error("Retry loop completed without success (no error captured, logic error)");
 	},
 };
 
@@ -527,7 +554,15 @@ export const async = {
  * @public
  * @since 0.1.0
  */
-export const object = {
+export const object: {
+	clone<T>(obj: T): T;
+	pick<T extends Record<string, unknown>, K extends keyof T>(
+		obj: T,
+		keys: K[],
+	): Pick<T, K>;
+	omit<T, K extends keyof T>(obj: T, keys: K[]): Omit<T, K>;
+	isEmpty(obj: object): boolean;
+} = {
 	/**
 	 * Creates a deep clone of an object using JSON serialization.
 	 *
@@ -549,7 +584,7 @@ export const object = {
 	 * @param keys - Array of keys to pick
 	 * @returns New object with only the specified keys
 	 */
-	pick<T extends Record<string, any>, K extends keyof T>(
+	pick<T extends Record<string, unknown>, K extends keyof T>(
 		obj: T,
 		keys: K[],
 	): Pick<T, K> {
@@ -612,7 +647,13 @@ export const object = {
  * @public
  * @since 0.1.0
  */
-export const string = {
+export const string: {
+	camelCase(str: string): string;
+	kebabCase(str: string): string;
+	snakeCase(str: string): string;
+	capitalize(str: string): string;
+	truncate(str: string, length: number, suffix?: string): string;
+} = {
 	/**
 	 * Converts string to camelCase format.
 	 *

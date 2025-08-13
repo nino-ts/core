@@ -51,7 +51,7 @@ export class Context implements NinoContext {
 	public readonly query: Record<string, string> = {};
 
 	/** Shared state object for middleware communication */
-	public readonly state: Record<string, any> = {};
+	public readonly state: Record<string, unknown> = {};
 
 	/** Cached parsed body content */
 	private _body: unknown = null;
@@ -154,7 +154,7 @@ export class Context implements NinoContext {
 				this._body = await this.request.json();
 			} else if (contentType.includes("application/x-www-form-urlencoded")) {
 				const formData = await this.request.formData();
-				const body: Record<string, any> = {};
+				const body: Record<string, unknown> = {};
 				for (const [key, value] of formData.entries()) {
 					body[key] = value;
 				}
@@ -166,7 +166,7 @@ export class Context implements NinoContext {
 			} else {
 				this._body = await this.request.arrayBuffer();
 			}
-		} catch (error) {
+		} catch (_error) {
 			this._body = null;
 		}
 
@@ -238,7 +238,7 @@ export class Context implements NinoContext {
 	 *
 	 * @since 0.1.0
 	 */
-	json(data: any, init?: ResponseInit): Response {
+	json(data: unknown, init?: ResponseInit): Response {
 		const headers = new Headers(this._headers);
 		headers.set("content-type", "application/json");
 
