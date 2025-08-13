@@ -388,7 +388,6 @@ export function Controller(basePath = ""): ControllerDecorator {
 				routes.forEach((route) => {
 					const fullPath = basePath + route.path;
 					const handler = (this as Record<string, unknown>)[route.propertyKey];
-
 					const handlerValue = (this as unknown)[route.propertyKey];
 
 					if (
