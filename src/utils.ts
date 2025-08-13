@@ -516,7 +516,10 @@ export const async: {
 			}
 		}
 
-		throw new Error("Retry loop completed without success");
+		if (lastError !== undefined) {
+			throw lastError;
+		}
+		throw new Error("Retry loop completed without success (no error captured, logic error)");
 	},
 };
 
